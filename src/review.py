@@ -74,24 +74,33 @@ def get_enums(path_source):
             objs = get_infos(path)
 
             if len(objs) >= 1:
-                enum_name = objs[0]['scope']
-                enum_values = []
-
+                names = []
                 for obj in objs:
-                    value_name = obj['name']
-                    real_value = get_enum_value(obj['pattern'], value_name)
+                    name = obj['scope']
+                    if name not in names:
+                        names.append(name)
 
-                    enum_values.append({
-                        "name": value_name,
-                        "line": obj["line"],
-                        "value": real_value
+                for enum_name in names:
+                    enum_values = []
+
+                    for obj in objs:
+                        if obj['scope'] != enum_name:
+                            continue
+
+                        value_name = obj['name']
+                        real_value = get_enum_value(obj['pattern'], value_name)
+
+                        enum_values.append({
+                            "name": value_name,
+                            "line": obj["line"],
+                            "value": real_value
+                        })
+
+                    enums.append({
+                        "name": enum_name,
+                        "path": path,
+                        "values": enum_values
                     })
-
-                enums.append({
-                    "name": enum_name,
-                    "path": path,
-                    "values": enum_values
-                })
 
     return enums
 
