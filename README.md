@@ -11,9 +11,9 @@ Arquivo config.json
         "project-name/EnumName",
     ],
     "data": {
-        "credentials": null,
-        "authorizedUserInfo": null,
-        "sheet": "Nome"
+        "credentials": {
+        },
+        "sheetId": ""
     }
 }
 ```

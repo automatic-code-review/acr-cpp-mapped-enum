@@ -4,6 +4,7 @@ import subprocess
 
 import automatic_code_review_commons as commons
 import gspread
+from google.oauth2.service_account import Credentials
 
 
 def review(config):
@@ -155,8 +156,9 @@ def get_data_by_google_sheets(config, worksheets):
     if len(worksheets) <= 0:
         return {}
 
-    client, _ = gspread.oauth_from_dict(credentials=config["credentials"], authorized_user_info=config["authorizedUserInfo"])
-    sh = client.open(config["sheet"])
+    creds = Credentials.from_service_account_info(config['credentials'], scopes=['https://www.googleapis.com/auth/spreadsheets.readonly'])
+    client = gspread.authorize(creds)
+    sh = client.open_by_key(config['sheetId'])
 
     __COLUMN_NAME = 1
     __COLUMN_VALUE = 2
@@ -164,8 +166,10 @@ def get_data_by_google_sheets(config, worksheets):
 
     worksheet_by_name = {}
 
-    for worksheet in worksheets:
-        worksheet_obj = sh.worksheet(worksheet)
+    for worksheet_obj in sh.worksheets():
+        if worksheet_obj.title not in worksheets:
+            continue
+
         names = worksheet_obj.col_values(__COLUMN_NAME)[__INDEX_START_ROW:]
         values = worksheet_obj.col_values(__COLUMN_VALUE)[__INDEX_START_ROW:]
         enums_from_google_sheet = []
@@ -176,6 +180,6 @@ def get_data_by_google_sheets(config, worksheets):
                 "value": values[index]
             })
 
-        worksheet_by_name[worksheet] = enums_from_google_sheet
+        worksheet_by_name[worksheet_obj.title] = enums_from_google_sheet
 
     return worksheet_by_name
